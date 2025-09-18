@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Вход | Messenger</title>
+  <style>
+    body { margin: 0; height: 100vh; display: grid; place-items: center; background: linear-gradient(180deg, #00a884 18%, #121b22 18%); font-family: Segoe UI, Roboto, Arial, sans-serif; color: #e9edef; }
+    .card { width: 360px; background: #111b21; border: 1px solid #222e35; border-radius: 12px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+    h1 { font-size: 20px; margin: 0 0 16px; }
+    label { display:block; margin: 10px 0 6px; color: #cfd7dc; font-size: 13px; }
+    input { width: 100%; background: #1f2c33; color: #e9edef; border: 1px solid #2a3942; border-radius: 8px; padding: 10px; outline: none; }
+    button { width: 100%; margin-top: 12px; background: #00a884; color: white; border: 0; border-radius: 10px; padding: 12px; font-weight: 700; cursor: pointer; }
+    .row { display: flex; gap: 10px; }
+    .muted { color: #8696a0; font-size: 12px; text-align: center; margin-top: 10px; }
+    .error { color: #ffb3b3; font-size: 12px; min-height: 16px; margin-top: 6px; }
+    .tabs { display:flex; gap:8px; margin-bottom: 12px; }
+    .tab { flex:1; text-align:center; padding:8px 10px; border-radius: 8px; background:#1f2c33; cursor:pointer; }
+    .tab.active { background:#0b2a24; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Messenger — вход</h1>
+
+    <div class="tabs">
+      <div id="tab-login" class="tab active" onclick="switchTab('login')">Войти</div>
+      <div id="tab-register" class="tab" onclick="switchTab('register')">Регистрация</div>
+    </div>
+
+    <div id="login-form">
+      <label>Email</label>
+      <input id="login_email" type="email" placeholder="email" />
+      <label>Пароль</label>
+      <input id="login_password" type="password" placeholder="пароль" />
+      <div id="login_err" class="error"></div>
+      <button onclick="login()">Войти</button>
+    </div>
+
+    <div id="reg-form" class="hidden">
+      <label>Email</label>
+      <input id="reg_email" type="email" placeholder="email" />
+      <label>Имя (опционально)</label>
+      <input id="reg_name" type="text" placeholder="имя" />
+      <label>Пароль</label>
+      <input id="reg_password" type="password" placeholder="пароль" />
+      <div id="reg_err" class="error"></div>
+      <button onclick="register()">Зарегистрироваться</button>
+    </div>
+
+    <div class="muted">После входа вы будете перенаправлены в чат.</div>
+  </div>
+
+  <script>
+    function switchTab(name) {
+      const isLogin = name === 'login';
+      document.getElementById('tab-login').classList.toggle('active', isLogin);
+      document.getElementById('tab-register').classList.toggle('active', !isLogin);
+      document.getElementById('login-form').classList.toggle('hidden', !isLogin);
+      document.getElementById('reg-form').classList.toggle('hidden', isLogin);
+    }
+
+    async function login() {
+      clearErr();
+      const email = document.getElementById('login_email').value.trim();
+      const password = document.getElementById('login_password').value;
+      if (!email || !password) return setErr('login_err', 'Введите email и пароль');
+      try {
+        const body = new URLSearchParams({ username: email, password });
+        const r = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.detail || 'Ошибка входа');
+        localStorage.setItem('auth_token', data.access_token);
+        location.href = '/ui';
+      } catch (e) {
+        setErr('login_err', e.message);
+      }
+    }
+
+    async function register() {
+      clearErr();
+      const email = document.getElementById('reg_email').value.trim();
+      const full_name = document.getElementById('reg_name').value.trim();
+      const password = document.getElementById('reg_password').value;
+      if (!email || !password) return setErr('reg_err', 'Введите email и пароль');
+      try {
+        const r = await fetch('/auth/register', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ email, password, full_name }) });
+        const data = await r.json();
+        if (!r.ok) throw new Error(data.detail || 'Ошибка регистрации');
+        // успешная регистрация -> сразу логин
+        const body = new URLSearchParams({ username: email, password });
+        const r2 = await fetch('/auth/login', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body });
+        const data2 = await r2.json();
+        if (!r2.ok) throw new Error(data2.detail || 'Ошибка входа');
+        localStorage.setItem('auth_token', data2.access_token);
+        location.href = '/ui';
+      } catch (e) {
+        setErr('reg_err', e.message);
+      }
+    }
+
+    function setErr(id, msg) { document.getElementById(id).textContent = msg; }
+    function clearErr() { setErr('login_err',''); setErr('reg_err',''); }
+
+    // Если уже авторизован — в чат
+    (function() {
+      const t = localStorage.getItem('auth_token');
+      if (t) location.href = '/ui';
+    })();
+  </script>
+</body>
+</html>
+
+
+
+
+
