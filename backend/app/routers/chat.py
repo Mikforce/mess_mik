@@ -1,8 +1,7 @@
+# chat.py
 from typing import Dict
 import json
-
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect, status
-
 from ..auth import decode_access_token_user_id
 
 

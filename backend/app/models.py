@@ -1,3 +1,4 @@
+# models.py
 from datetime import datetime
 from typing import Optional
 
@@ -60,6 +61,8 @@ class Message(Base):
 
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
     sender: Mapped[User] = relationship(back_populates="messages")
+
+
 
 
 
