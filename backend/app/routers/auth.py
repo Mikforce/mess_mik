@@ -1,5 +1,6 @@
 from datetime import timedelta
 
+from dadata import settings
 from fastapi import APIRouter, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import select
@@ -10,9 +11,20 @@ from ..config import get_settings
 from ..db import get_db_session
 from ..models import User
 from ..schemas import Token, UserCreate, UserRead
-
-
+from jose import jwt
+from ..config import get_settings
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+
+
+
+def decode_token(token: str):
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        return payload
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
 
 
 @router.post("/register", response_model=UserRead)
@@ -44,7 +56,33 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Async
 @router.get("/me", response_model=UserRead)
 async def me(current_user: User = Depends(get_current_user)):
     return current_user
+from datetime import timedelta
 
+from dadata import settings # This import is problematic
+from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from ..auth import create_access_token, get_password_hash, verify_password, get_current_user
+from ..config import get_settings
+from ..db import get_db_session
+from ..models import User
+from ..schemas import Token, UserCreate, UserRead
+from jose import jwt
+from ..config import get_settings
+router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+def decode_token(token: str):
+    settings = get_settings() # Use get_settings() here
+    try:
+        payload = jwt.decode(token, settings.SECRET_KEY, algorithms=["HS256"])
+        return payload
+    except Exception:
+        raise HTTPException(status_code=401, detail="Invalid token")
+
+# ... rest of the code from auth (1).py
 
 
 
