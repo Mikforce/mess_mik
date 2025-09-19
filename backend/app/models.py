@@ -15,7 +15,6 @@ class User(Base):
     password_hash: Mapped[str] = mapped_column(String(255))
     full_name: Mapped[Optional[str]] = mapped_column(String(255), default=None)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
-    is_admin: Mapped[bool] = mapped_column(Boolean, default=False) # Added this line
     created_at: Mapped[datetime] = mapped_column(default=datetime.utcnow)
 
     messages: Mapped[list["Message"]] = relationship(back_populates="sender")
@@ -61,3 +60,8 @@ class Message(Base):
 
     conversation: Mapped[Conversation] = relationship(back_populates="messages")
     sender: Mapped[User] = relationship(back_populates="messages")
+
+
+
+
+

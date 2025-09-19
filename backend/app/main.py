@@ -8,7 +8,6 @@ from .db import engine, Base
 from .routers import auth as auth_router
 from .routers import users as users_router
 from .routers import chat as chat_router
-from .routers import admin as admin_router
 
 
 def create_app() -> FastAPI:
@@ -28,7 +27,6 @@ def create_app() -> FastAPI:
     app.include_router(auth_router.router)
     app.include_router(users_router.router)
     app.include_router(chat_router.router)
-    app.include_router(admin_router.router)
 
     @app.on_event("startup")
     async def on_startup() -> None:
